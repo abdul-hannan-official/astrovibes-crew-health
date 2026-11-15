@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AstroVibes Crew Health — NASA Space Apps Challenge 2026</title>
+<meta name="description" content="AstroVibes Crew Health: health monitoring software for astronauts on long missions, built for flight surgeons and mission teams. All data shown is simulated.">
+<link rel="stylesheet" href="styles.css">
+<script src="chart.min.js" defer></script>
+<script>
+/* Chart.js fallback: use the bundled local file when present; if it is
+   missing (e.g. a deployment without it), load the same version from CDN. */
+window.addEventListener('load', function () {
+  if (window.Chart) return;
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+  s.onload = function () {
+    var t = document.getElementById('page-trends');
+    if (t && t.classList.contains('active') && typeof renderTrends === 'function') renderTrends();
+  };
+  document.head.appendChild(s);
+});
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <h1>AstroVibes <span>Crew Health</span></h1>
+      <p>Health monitoring for astronauts on long missions &mdash; for flight surgeons &amp; mission teams</p>
+      <span class="sim-badge">ALL DATA SIMULATED</span>
+    </div>
+    <div class="mission-chip">
+      <strong>Mission MERIDIAN-1</strong><br>
+      Day <span id="missionDay">98</span> of 180 &middot; Team Astrovibes &middot; Multan<br>
+      <span id="envChip">Environment: ISS &middot; Ground delay: near-instant</span>
+    </div>
+  </div>
+  <nav class="main" aria-label="Main navigation">
+    <button data-nav="dashboard" class="active">Dashboard</button>
+    <button data-nav="checkin">Daily Check-in</button>
+    <button data-nav="bodymap">Body Map</button>
+    <button data-nav="trends">Vitals &amp; Trends</button>
+    <button data-nav="alerts">Alerts &amp; Triage</button>
+    <button data-nav="devices">Devices</button>
+    <button data-nav="crew">Crew Detail</button>
+    <button data-nav="research">NASA Research</button>
+    <button data-nav="settings">Settings</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ DASHBOARD ============ -->
+  <section class="page active" id="page-dashboard">
+    <h2>Flight Surgeon Dashboard</h2>
+    <p class="lead">One screen, one minute: who is well, who needs watching, and who needs help now. Every value below is <strong>simulated</strong> demonstration data — not real astronaut telemetry, and not a diagnosis.</p>
+    <div id="reminderBanner" class="banner"></div>
+    <div class="grid cols4" id="dashSummary"></div>
+
+    <h3>Crew status</h3>
+    <div class="grid cols3" id="crewCards"></div>
+
+    <h3>Environment — cabin &amp; radiation (simulated)</h3>
+    <div class="card">
+      <div class="kv" id="envPanel"></div>
+      <p class="muted small" id="commDelayNote" style="margin-top:10px"></p>
+    </div>
+
+    <h3>Most urgent alerts today</h3>
+    <div id="dashAlerts"></div>
+    <p><button class="btn secondary small" id="exportCsvBtn">Download readings as CSV</button>
+    <span class="muted small">Exports the simulated readings stored on this device.</span></p>
+  </section>
+
+  <!-- ============ CHECK-IN ============ -->
+  <section class="page" id="page-checkin">
+    <h2>Daily Check-in — 2 minutes</h2>
+    <p class="lead">The astronaut answers once a day. The software compares each answer with <strong>that astronaut&rsquo;s own 7-day baseline</strong> — not just textbook ranges — and returns one triage tier with a concrete next action.</p>
+    <div class="card">
+      <form id="checkinForm">
+        <div class="form-grid">
+          <div><label for="ciCrew">Crew member</label>
+            <select id="ciCrew" required></select></div>
+          <div><label for="ciHr">Heart rate (bpm)</label>
+            <input id="ciHr" type="number" min="30" max="200" step="1" value="71" required></div>
+          <div><label for="ciSys">Blood pressure — systolic (mmHg)</label>
+            <input id="ciSys" type="number" min="70" max="220" step="1" value="119" required></div>
+          <div><label for="ciDia">Blood pressure — diastolic (mmHg)</label>
+            <input id="ciDia" type="number" min="40" max="140" step="1" value="77" required></div>
+          <div><label for="ciSpo2">Oxygen saturation SpO2 (%)</label>
+            <input id="ciSpo2" type="number" min="70" max="100" step="0.1" value="98" required></div>
+          <div><label for="ciTemp">Body temperature (&deg;C)</label>
+            <input id="ciTemp" type="number" min="34" max="42" step="0.1" value="36.7" required></div>
+          <div><label for="ciGlucose">Glucose (mg/dL) — optional</label>
+            <input id="ciGlucose" type="number" min="50" max="300" step="1" value="94" placeholder="Leave blank if not measured"></div>
+          <div><label for="ciSleep">Sleep last night (hours)</label>
+            <input id="ciSleep" type="number" min="0" max="14" step="0.1" value="7.1" required></div>
+          <div><label for="ciSleepQuality">Sleep quality</label>
+            <select id="ciSleepQuality"><option value="good">Good</option><option value="fair" selected>Fair</option><option value="poor">Poor</option></select></div>
+          <div><label for="ciMood">Mood (1 = very low, 5 = very good)</label>
+            <select id="ciMood"><option>1</option><option>2</option><option>3</option><option value="4" selected>4</option><option>5</option></select></div>
+          <div><label for="ciStress">Stress (1 = calm, 5 = very stressed)</label>
+            <select id="ciStress"><option>1</option><option value="2" selected>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div><label for="ciExercise">Exercise today (minutes)</label>
+            <input id="ciExercise" type="number" min="0" max="300" step="5" value="45" required></div>
+          <div><label for="ciExerciseType">Exercise type</label>
+            <select id="ciExerciseType"><option>Treadmill</option><option>Cycle ergometer</option><option>Resistance training</option><option>None today</option></select></div>
+        </div>
+        <label for="ciSymptoms">Symptoms — write anything you feel (optional)</label>
+        <textarea id="ciSymptoms" rows="2" placeholder="e.g. mild headache, sore knees, trouble falling asleep"></textarea>
+        <p style="margin-top:14px"><button class="btn" type="submit">Submit check-in &amp; get triage</button></p>
+      </form>
+      <div id="triageResult" aria-live="polite"></div>
+    </div>
+    <div class="notice" style="margin-top:14px">Check-in streaks: <span id="streakLine"></span> — a streak is only a routine habit, never a health score. If a reading is missing, the software says so instead of guessing.</div>
+  </section>
+
+  <!-- ============ BODY MAP ============ -->
+  <section class="page" id="page-bodymap">
+    <h2>Body Map — click a system</h2>
+    <p class="lead">Click a part of the figure to see that system&rsquo;s indicators, the spaceflight hazard behind them, and what to do. Colours show the selected crew member&rsquo;s current status for that system.</p>
+    <div class="body-layout">
+      <div>
+        <label for="bodyCrew">Crew member</label>
+        <select id="bodyCrew"></select>
+        <svg class="body-svg" viewBox="0 0 300 420" role="img" aria-label="Clickable human body map">
+          <circle class="body-part" data-system="mind" cx="150" cy="42" r="30"></circle>
+          <text class="body-label" x="150" y="46">Mind</text>
+          <circle class="body-part" data-system="eyes" cx="150" cy="92" r="14"></circle>
+          <text class="body-label" x="150" y="96">Eyes</text>
+          <ellipse class="body-part" data-system="lungs" cx="150" cy="155" rx="52" ry="38"></ellipse>
+          <text class="body-label" x="150" y="159">Lungs</text>
+          <ellipse class="body-part" data-system="heart" cx="150" cy="205" rx="34" ry="26"></ellipse>
+          <text class="body-label" x="150" y="209">Heart</text>
+          <ellipse class="body-part" data-system="gut" cx="150" cy="265" rx="44" ry="30"></ellipse>
+          <text class="body-label" x="150" y="269">Gut</text>
+          <rect class="body-part" data-system="muscles" x="92" y="300" width="116" height="26" rx="12"></rect>
+          <text class="body-label" x="150" y="317">Muscles &amp; bones</text>
+          <rect class="body-part" data-system="skin" x="108" y="335" width="84" height="62" rx="12"></rect>
+          <text class="body-label" x="150" y="368">Skin</text>
+          <text class="body-label" x="150" y="405" style="fill:#6b7f9c">Click a region — status is simulated</text>
+        </svg>
+      </div>
+      <div class="card" id="bodyInfo"><h3>Select a body system</h3><p class="muted">Click Mind, Eyes, Lungs, Heart, Gut, Muscles &amp; bones, or Skin on the figure.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ TRENDS ============ -->
+  <section class="page" id="page-trends">
+    <h2>Vitals &amp; Trends</h2>
+    <p class="lead">Every chart shows the crew member&rsquo;s own 7-day baseline as a dashed line. A value drifting away from its own baseline is flagged even while it is still inside the normal range. All data simulated.</p>
+    <label for="trendCrew">Crew member</label>
+    <select id="trendCrew" style="max-width:320px"></select>
+    <div class="metric-row" id="metricRow">
+      <button data-metric="hr" class="active">Heart rate</button>
+      <button data-metric="sys">Blood pressure (systolic)</button>
+      <button data-metric="spo2">SpO2</button>
+      <button data-metric="temp">Temperature</button>
+      <button data-metric="sleep">Sleep</button>
+      <button data-metric="exercise">Exercise</button>
+    </div>
+    <div class="metric-row" id="rangeRow">
+      <button data-range="24h" class="active">Last 24 hours</button>
+      <button data-range="7d">Last 7 days</button>
+    </div>
+    <div class="card">
+      <div class="chart-box"><canvas id="trendChart" aria-label="Trend chart"></canvas></div>
+      <p class="chart-note">Low-bandwidth mode is on: charts are hidden. The table below shows the same data.</p>
+      <div id="trendSummary" style="margin-top:10px"></div>
+      <div class="table-wrap" id="trendTableWrap" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <!-- ============ ALERTS ============ -->
+  <section class="page" id="page-alerts">
+    <h2>Alerts &amp; Triage Center</h2>
+    <p class="lead">Most urgent first. Every alert names its rule, shows the measured value, the threshold, and the astronaut&rsquo;s own baseline — so a flight surgeon can see <em>why</em> it fired. This software flags risk; it does not diagnose disease.</p>
+    <div class="filter-row" id="alertFilters">
+      <button data-filter="all" class="active">All (<span id="countAll">0</span>)</button>
+      <button data-filter="critical">Critical (<span id="countCritical">0</span>)</button>
+      <button data-filter="alert">Alert (<span id="countAlert">0</span>)</button>
+      <button data-filter="watch">Watch (<span id="countWatch">0</span>)</button>
+      <button data-filter="unacked">Unacknowledged (<span id="countUnacked">0</span>)</button>
+    </div>
+    <div id="alertsList"></div>
+  </section>
+
+  <!-- ============ CREW DETAIL ============ -->
+  <section class="page" id="page-crew">
+    <h2>Crew Member Detail</h2>
+    <p class="lead">One astronaut&rsquo;s full picture: latest check-in, personal baseline, check-in streak, and recent history. All data simulated.</p>
+    <label for="crewSelect">Crew member</label>
+    <select id="crewSelect" style="max-width:320px"></select>
+    <div id="crewDetail" style="margin-top:14px"></div>
+  </section>
+
+  <!-- ============ DEVICES ============ -->
+  <section class="page" id="page-devices">
+    <h2>Connected Devices &amp; Data Flow</h2>
+    <p class="lead">How each reading reaches this app in a real mission. <strong>Devices measure; the app decides.</strong> Vitals come from sensors automatically — manual typing is only a fallback when a device is unavailable, plus the few things only a person can report (mood, symptoms, sleep quality, vision). Every manually entered value is tagged <strong>MANUAL</strong> in the CSV export, so a flight surgeon always knows where a number came from.</p>
+    <p class="muted small">Demo note: this build runs on a <strong>simulated device feed</strong> — each card below shows the real device it stands in for, and in a live deployment it would show live status, battery and last sync instead of &ldquo;simulated feed&rdquo;.</p>
+
+    <h3>The devices</h3>
+    <div class="grid cols2">
+      <div class="card"><h3>Astroskin Bio-Monitor — smart shirt</h3><p><strong>Role:</strong> wearable, worn in the cabin, 24/7. <strong>Measures:</strong> heart rate, 3-lead ECG, SpO2, systolic blood-pressure estimate, skin temperature, breathing rate and volume, activity, sleep. <strong>Connection:</strong> Bluetooth LE to the on-board hub. <strong>Status:</strong> connected (simulated feed). <strong>Real world:</strong> Canadian Space Agency technology, flown on the ISS.</p></div>
+      <div class="card"><h3>Tempus Pro — medical station</h3><p><strong>Role:</strong> on-demand and daily checks, used by the crew medic or the astronaut themself. <strong>Measures:</strong> ECG, non-invasive blood pressure (cuff), SpO2, temperature, plus ultrasound, laryngoscope and camera. Built-in iAssist guides each step. <strong>Connection:</strong> USB / spacecraft LAN. <strong>Status:</strong> connected (simulated feed). <strong>Real world:</strong> tested by NASA in the HESTIA chamber (2023) and flying on ISS missions.</p></div>
+      <div class="card"><h3>Wrist Actigraph — Standard Measures</h3><p><strong>Role:</strong> wearable, 24/7. <strong>Measures:</strong> motion, sleep and light exposure — the Artemis II Standard Measures set for deep space. <strong>Connection:</strong> Bluetooth LE. <strong>Status:</strong> connected (simulated feed).</p></div>
+      <div class="card"><h3>Personal Radiation Dosimeter</h3><p><strong>Role:</strong> worn at all times. <strong>Measures:</strong> cumulative radiation dose (mSv) and dose rate. <strong>Connection:</strong> spacecraft LAN, auto-sync every hour. <strong>Status:</strong> connected (simulated feed). <strong>Why it matters:</strong> radiation is one of NASA&rsquo;s 5 hazards; dose limits come from NASA-STD-3001.</p></div>
+      <div class="card"><h3>Cabin Environment Sensors</h3><p><strong>Role:</strong> fixed in the spacecraft. <strong>Measures:</strong> cabin temperature, pressure, CO2, noise and ambient radiation. <strong>Connection:</strong> spacecraft LAN. <strong>Status:</strong> connected (simulated feed).</p></div>
+      <div class="card"><h3>EVA Suit Sensors — spacewalks only</h3><p><strong>Role:</strong> worn inside the suit during a spacewalk. <strong>Measures:</strong> heart rate, suit temperature, oxygen and CO2 levels, suit pressure. <strong>Connection:</strong> suit telemetry to the spacecraft. <strong>Status:</strong> idle on non-EVA days — the suit is not worn in the cabin, so daily health comes from the shirt and Tempus Pro, not the suit.</p></div>
+    </div>
+
+    <h3>Data flow — from sensor to decision</h3>
+    <div class="table-wrap card" style="padding:8px 16px">
+      <table>
+        <thead><tr><th>Step</th><th>What happens</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>1. Sense</td><td>Devices measure vitals continuously (shirt, dosimeter, actigraph) or on demand (Tempus Pro).</td><td>On the astronaut / in the cabin</td></tr>
+          <tr><td>2. Send</td><td>Readings travel by Bluetooth LE or spacecraft LAN to the on-board hub.</td><td>Spacecraft network</td></tr>
+          <tr><td>3. Store</td><td>The app stores every reading locally first — it works fully offline.</td><td>This app (on-board)</td></tr>
+          <tr><td>4. Compare</td><td>Each new reading is compared with that astronaut&rsquo;s own 7-day baseline, not a textbook range.</td><td>This app (on-board)</td></tr>
+          <tr><td>5. Decide</td><td>The risk engine gives one of 4 triage tiers with a concrete next action — on board, without waiting for ground.</td><td>This app (on-board)</td></tr>
+          <tr><td>6. Forward</td><td>Readings and alerts are sent to the flight surgeon on the ground when a link is available (store-and-forward). On Mars the one-way delay is 20–44 minutes, so step 5 never waits for step 6.</td><td>Ground link, when available</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>What is manual, and what is never manual</h3>
+    <div class="grid cols2">
+      <div class="card"><h3>From devices (automatic)</h3><p>Heart rate, ECG, SpO2, blood pressure, temperature, breathing, activity, sleep hours, radiation dose, cabin environment. If a device stops sending, the app says &ldquo;no data&rdquo; — it never invents a value.</p></div>
+      <div class="card"><h3>From the person (manual, by design)</h3><p>Mood, stress, symptoms, sleep quality and vision — only the astronaut can feel and report these. Manual entry is also the fallback if a device is down, and every such value is tagged MANUAL.</p></div>
+    </div>
+    <p class="muted small">Sources: Astroskin / Bio-Monitor — Canadian Space Agency (asc-csa.gc.ca); Tempus Pro — NASA Human Research Program / Frontiers in Space Technologies (2024); Standard Measures actigraphy — NASA HRP Artemis II research.</p>
+  </section>
+
+  <!-- ============ RESEARCH ============ -->
+  <section class="page" id="page-research">
+    <h2>NASA Research &amp; Sources</h2>
+    <p class="lead">The only NASA facts used in this project come from the three official pages below. No NASA finding, dataset ID, or number has been invented. The software&rsquo;s readings are simulated; the research below is real and linked. See <strong>Devices</strong> for how each reading is measured in real life.</p>
+
+    <h3>The 5 Hazards of Human Spaceflight</h3>
+    <p class="muted small">Source: <a href="https://www.nasa.gov/hrp/hazards/" target="_blank" rel="noopener">nasa.gov/hrp/hazards/</a> — hazards do not stand alone; they feed off one another and worsen effects on the body.</p>
+    <div class="grid cols2">
+      <div class="card"><h3>1. Space Radiation</h3><p>Invisible to the human eye, and considered one of the most hazardous aspects of spaceflight.</p></div>
+      <div class="card"><h3>2. Isolation and Confinement</h3><p>Behavioural responses occur in groups isolated and confined in a small space over a long period of time.</p></div>
+      <div class="card"><h3>3. Distance from Earth</h3><p>Instructions, supplies and medical care become harder to receive. Mars is on average 140 million miles away — a roughly 3-year trip, versus a 3-day lunar trip. Self-sufficiency is key.</p></div>
+      <div class="card"><h3>4. Gravity Fields</h3><p>Muscles, bones, inner ear and organs must adjust. On Mars, astronauts live in three-eighths of Earth&rsquo;s gravity for up to two years.</p></div>
+      <div class="card"><h3>5. Hostile / Closed Environments</h3><p>Temperature, pressure, lighting, noise, microbes and immune responses inside the spacecraft must be kept safe.</p></div>
+    </div>
+
+    <h3>The 17 Risks of Human Spaceflight</h3>
+    <p class="muted small">Source: <a href="https://www.nasa.gov/hrp/risks/" target="_blank" rel="noopener">nasa.gov/hrp/risks/</a> — summarised below, in NASA&rsquo;s own categories.</p>
+    <div class="table-wrap card" style="padding:8px 16px">
+      <table>
+        <thead><tr><th>Risk</th><th>What it means</th><th>Indicator in this software</th></tr></thead>
+        <tbody>
+          <tr><td>Altered immune system responses</td><td>Stress can awaken inactive viruses; rashes and other symptoms.</td><td>Symptom log, stress, sleep</td></tr>
+          <tr><td>Altered sensorimotor and vestibular function</td><td>Motion sickness, hand-eye / gait problems, dizziness.</td><td>Dizziness / symptom log</td></tr>
+          <tr><td>Cardiovascular adaptations</td><td>Weightlessness changes circulation and heart / vessel function.</td><td>Heart rate, blood pressure</td></tr>
+          <tr><td>Decompression sickness</td><td>Nitrogen bubbles when moving to a lower-pressure suit.</td><td>Joint-pain symptom log</td></tr>
+          <tr><td>Host-microorganism interactions</td><td>Skin and gut microbiomes change; sickness risk rises.</td><td>Illness / symptom log</td></tr>
+          <tr><td>Hypoxia</td><td>Oxygen in body tissues falls below normal.</td><td>SpO2</td></tr>
+          <tr><td>Inadequate food and nutrition</td><td>Diet affects health and performance.</td><td>Check-in notes (no diet module yet)</td></tr>
+          <tr><td>Injury and compromised performance from spacewalks</td><td>Fatigue, injury, low oxygen / high CO2 in the suit.</td><td>Fatigue, exercise, SpO2</td></tr>
+          <tr><td>Reduced cardiorespiratory and musculoskeletal fitness</td><td>Bone density, muscle strength and heart performance fall; exercise is the countermeasure.</td><td>Exercise minutes, muscle / bone checks</td></tr>
+          <tr><td>Spaceflight Associated Neuro-ocular Syndrome (SANS)</td><td>Eye and brain structure changes; NASA&rsquo;s leading spaceflight health risk.</td><td>Vision / eye checks, headache log</td></tr>
+          <tr><td>Spaceflight-induced bone changes</td><td>Bones break down and become brittle; fracture risk rises.</td><td>Exercise, bone-change checks</td></tr>
+          <tr><td>Behavioural changes and psychiatric disorders</td><td>Isolation, radiation and distance affect mental health.</td><td>Mood, stress, sleep</td></tr>
+          <tr><td>Inadequate teamwork</td><td>Miscommunication and tension in prolonged isolation.</td><td>Mood / stress, check-in notes</td></tr>
+          <tr><td>Inadequate sleep and irregular schedules</td><td>Chronic sleep loss and circadian disruption.</td><td>Sleep hours and quality</td></tr>
+          <tr><td>Inadequate systems operations support</td><td>Crews need the right information and training at the right time.</td><td>Guidance shown with every alert</td></tr>
+          <tr><td>Injury from dynamic loads</td><td>Landing activities carry injury risk.</td><td>Event / symptom log</td></tr>
+          <tr><td>Radiation-induced cancers</td><td>Space radiation exposure may raise cancer likelihood.</td><td>Cumulative radiation dose</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Ongoing HRP Research — studies this project refers to</h3>
+    <p class="muted small">Source: <a href="https://www.nasa.gov/hrp/ongoing-hrp-research/" target="_blank" rel="noopener">nasa.gov/hrp/ongoing-hrp-research/</a></p>
+    <div class="grid cols2">
+      <div class="card"><h3>Tempus Pro</h3><p>A commercial telemedicine device that collects and integrates health data, potentially enabling remote, near real-time diagnosis. The closest real-world model for this challenge.</p></div>
+      <div class="card"><h3>Standard Measures</h3><p>A consistent set of physiological and psychological measurements, collected the same way so future researchers can learn how spaceflight affects crew.</p></div>
+      <div class="card"><h3>CIPHER</h3><p>A suite of studies examining multiple body systems to understand how the human body changes while orbiting Earth.</p></div>
+      <div class="card"><h3>ARCHeR (Artemis II)</h3><p>Monitors astronauts&rsquo; well-being, activity and sleep patterns to learn about human health and performance in deep space.</p></div>
+      <div class="card"><h3>Immune Biomarkers (Artemis II)</h3><p>Blood and saliva samples showing how deep space changes the immune system.</p></div>
+      <div class="card"><h3>Thigh Cuff &amp; Brain Fluid Pressure</h3><p>Testing whether thigh cuffs keep fluids in the legs to avert eye disorders, and how fluid pressure inside the skull relates to eye and brain changes.</p></div>
+    </div>
+    <h3>More NASA data sources — open data this project refers to</h3>
+    <p class="muted small">These are real, public NASA sources. They are used as references only — their data is <strong>not</strong> fed into this demo&rsquo;s risk scores, which use labelled simulated readings.</p>
+    <div class="grid cols2">
+      <div class="card"><h3>NASA Open Science Data Repository (OSDR)</h3><p>Multi-modal space life-science data: GeneLab omics plus ALSDA physiology, behaviour and environmental telemetry, with a RadLab radiation-telemetry API. <a href="https://science.nasa.gov/biological-physical/data/osdr/" target="_blank" rel="noopener">science.nasa.gov — About OSDR</a></p></div>
+      <div class="card"><h3>NASA-STD-3001 — Crew Health Standard</h3><p>The Agency-level Space Flight Human-System Standard. Volume 1 (Crew Health) sets the requirements, thresholds and limits for astronaut health and medical care; Volume 2 covers human factors and habitability. <a href="https://www.nasa.gov/wp-content/uploads/2023/04/standards-article-april-2023.pdf" target="_blank" rel="noopener">nasa.gov — the standard, explained</a></p></div>
+      <div class="card"><h3>Ames Life Sciences Data Archive (ALSDA)</h3><p>NASA&rsquo;s official repository for non-human life-sciences data from the Space Biology and Human Research Programs — now part of OSDR. The model for keeping research data separate from live crew data.</p></div>
+      <div class="card"><h3>Canadian Space Agency — Radiation Monitoring</h3><p>How Canadian scientists monitor space radiation to protect astronaut health — the radiation context behind this app&rsquo;s cumulative-dose tracking. <a href="https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp" target="_blank" rel="noopener">asc-csa.gc.ca</a></p></div>
+    </div>
+    <p class="muted small">Challenge page: <a href="https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/" target="_blank" rel="noopener">spaceappschallenge.org — Create Health Monitoring Software for Astronauts on Space Missions</a>. Challenge video: <a href="https://youtu.be/RERG3gEmdC8" target="_blank" rel="noopener">youtu.be/RERG3gEmdC8</a> (intro only, no extra data).</p>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section class="page" id="page-settings">
+    <h2>Settings</h2>
+    <p class="lead">Environment, role and bandwidth change what the software recommends and what it shows. Nothing here leaves this device.</p>
+    <div class="grid cols2">
+      <div class="card">
+        <h3>Environment &amp; communication delay</h3>
+        <label for="setEnv">Environment</label>
+        <select id="setEnv">
+          <option value="ISS">ISS — near Earth</option>
+          <option value="Spacecraft">Spacecraft — in transit</option>
+          <option value="Rover">Rover — surface traverse</option>
+          <option value="Moon Base">Moon Base</option>
+          <option value="Mars Base">Mars Base</option>
+        </select>
+        <p class="muted" id="envDetail"></p>
+        <h3>Role</h3>
+        <label for="setRole">You are viewing as</label>
+        <select id="setRole">
+          <option value="Flight Surgeon">Flight Surgeon (sees all crew)</option>
+          <option value="Crew Medic">Crew Medic (sees all crew)</option>
+          <option value="Astronaut">Astronaut (sees only your own record)</option>
+        </select>
+        <p class="muted small" id="roleNote"></p>
+        <h3>Bandwidth</h3>
+        <label><input type="checkbox" id="setLowBandwidth" style="width:auto"> Low-bandwidth mode — hide charts, sync critical alerts only</label>
+      </div>
+      <div class="card">
+        <h3>Privacy &amp; safety</h3>
+        <ul class="tight">
+          <li>Health data is sensitive. In this demo it is stored only in this browser (<code>localStorage</code>) and never sent to a server.</li>
+          <li>Roles limit what is shown: an Astronaut sees only their own record; a Flight Surgeon sees the whole crew.</li>
+          <li>This software flags risk using stated rules and thresholds. It does not diagnose disease, prescribe treatment, or decide mission readiness. Always follow the flight surgeon / medical team.</li>
+          <li>All readings are simulated demonstration data. Thresholds in this app are demonstration thresholds, not medically validated flight standards.</li>
+          <li>Not a NASA product. Not endorsed by NASA. Not a medical device.</li>
+        </ul>
+        <h3>Demo data</h3>
+        <p class="muted">Reset returns the app to its original simulated seed data (3 crew, 14 days of history).</p>
+        <button class="btn danger small" id="resetDataBtn">Reset demo data</button>
+        <p style="margin-top:12px"><button class="btn secondary small" id="exportCsvBtn2">Download readings as CSV</button></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p><strong>AstroVibes Crew Health</strong> — Team Astrovibes, Multan · NASA Space Apps Challenge 2026 · Mission MERIDIAN-1 (fictional). All crew members are fictional. All health data is simulated and labelled SIMULATED. This is a research prototype, not a medical device, not clinically validated, and not endorsed by NASA.</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

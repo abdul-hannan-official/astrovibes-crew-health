@@ -1,0 +1,111 @@
+/* AstroVibes Crew Health — dark space theme, flight-surgeon dashboard.
+   Vanilla CSS only. Colour coding: green = nominal, amber = watch, red = alert/critical. */
+:root{
+  --bg:#070d1a; --bg2:#0b1526; --panel:#101d33; --panel2:#13263f;
+  --line:#22395c; --text:#e8eef7; --muted:#9fb0c8; --faint:#6b7f9c;
+  --green:#2fbf71; --amber:#f5a623; --red:#ef4444; --blue:#38bdf8; --violet:#a78bfa;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:radial-gradient(1200px 600px at 80% -10%,#12294d 0%,var(--bg) 55%);color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.5;font-size:16px}
+a{color:var(--blue)}
+header.top{position:sticky;top:0;z-index:20;background:rgba(7,13,26,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+.top-inner{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.brand h1{font-size:1.35rem;margin:0;letter-spacing:.4px}
+.brand h1 span{color:var(--blue)}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:.85rem}
+.sim-badge{display:inline-block;background:#3b2f04;color:#ffd166;border:1px solid #8a6d1a;border-radius:99px;padding:2px 10px;font-size:.75rem;font-weight:700;letter-spacing:.06em}
+.mission-chip{color:var(--muted);font-size:.85rem;text-align:right}
+.mission-chip strong{color:var(--text)}
+nav.main{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px}
+nav.main button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:99px;padding:8px 14px;cursor:pointer;font-size:.92rem}
+nav.main button:hover{border-color:var(--blue)}
+nav.main button.active{background:var(--blue);color:#04121f;border-color:var(--blue);font-weight:700}
+main{max-width:1180px;margin:0 auto;padding:16px}
+section.page{display:none}
+section.page.active{display:block}
+h2{margin:6px 0 4px;font-size:1.45rem}
+h3{margin:18px 0 8px;font-size:1.1rem}
+.lead{color:var(--muted);margin:0 0 14px;max-width:75ch}
+.grid{display:grid;gap:14px}
+.grid.cols2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid.cols3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.grid.cols4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.card h3{margin-top:0}
+.muted{color:var(--muted)} .small{font-size:.85rem} .faint{color:var(--faint)}
+.stat{font-size:2rem;font-weight:800;line-height:1.1;margin:4px 0}
+.pill{display:inline-block;border-radius:99px;padding:3px 11px;font-size:.8rem;font-weight:700}
+.pill.green{background:rgba(47,191,113,.16);color:#7be3a8;border:1px solid var(--green)}
+.pill.amber{background:rgba(245,166,35,.14);color:#ffd28a;border:1px solid var(--amber)}
+.pill.red{background:rgba(239,68,68,.16);color:#ffb3b3;border:1px solid var(--red)}
+.pill.blue{background:rgba(56,189,248,.14);color:#a5e3ff;border:1px solid var(--blue)}
+.pill.grey{background:rgba(159,176,200,.12);color:var(--muted);border:1px solid var(--line)}
+.status-green{border-left:5px solid var(--green)} .status-amber{border-left:5px solid var(--amber)} .status-red{border-left:5px solid var(--red)}
+.crew-card{cursor:pointer}
+.crew-card:hover{border-color:var(--blue)}
+.crew-card .name{font-size:1.15rem;font-weight:700}
+.vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:12px}
+.vital{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px}
+.vital .label{font-size:.78rem;color:var(--muted)}
+.vital .value{font-size:1.25rem;font-weight:700}
+.vital .base{font-size:.78rem;color:var(--faint)}
+.banner{border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;border:1px solid var(--amber);background:rgba(245,166,35,.1)}
+.banner.green{border-color:var(--green);background:rgba(47,191,113,.09)}
+.banner.red{border-color:var(--red);background:rgba(239,68,68,.1)}
+.banner h3{margin:0 0 4px}
+form label{display:block;font-size:.9rem;margin:10px 0 4px;color:var(--muted)}
+form input,form select,form textarea{width:100%;background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:1rem}
+form input:focus,form select:focus,form textarea:focus{outline:2px solid var(--blue);border-color:var(--blue)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0 14px}
+button.btn{background:var(--blue);color:#04121f;border:0;border-radius:10px;padding:11px 18px;font-size:1rem;font-weight:700;cursor:pointer}
+button.btn:hover{filter:brightness(1.1)}
+button.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line);font-weight:600}
+button.btn.danger{background:var(--red);color:#fff}
+button.btn.small{padding:7px 12px;font-size:.88rem}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+.table-wrap{overflow-x:auto}
+.alert-item{border:1px solid var(--line);border-left-width:5px;border-radius:12px;padding:13px 14px;margin-bottom:10px;background:var(--panel)}
+.alert-item.critical{border-left-color:var(--red)} .alert-item.alert{border-left-color:var(--red)}
+.alert-item.watch{border-left-color:var(--amber)} .alert-item.nominal{border-left-color:var(--green)}
+.alert-item.acked{opacity:.6}
+.alert-item .rule{font-weight:700}
+.alert-item dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px 14px;margin:8px 0;font-size:.9rem}
+.alert-item dt{color:var(--faint);font-size:.78rem} .alert-item dd{margin:0}
+.filter-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.filter-row button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:99px;padding:7px 13px;cursor:pointer}
+.filter-row button.active{background:var(--blue);color:#04121f;font-weight:700;border-color:var(--blue)}
+.body-layout{display:grid;grid-template-columns:minmax(260px,380px) 1fr;gap:16px;align-items:start}
+@media(max-width:760px){.body-layout{grid-template-columns:1fr}}
+.body-svg{width:100%;height:auto;background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius)}
+.body-part{cursor:pointer;fill:#1d3a5f;stroke:#38bdf8;stroke-width:1.5;transition:fill .15s}
+.body-part:hover,.body-part.selected{fill:#38bdf8}
+.body-part.warn{fill:#7a4d12;stroke:var(--amber)}
+.body-part.crit{fill:#7a1d1d;stroke:var(--red)}
+.body-label{fill:#cfe3ff;font-size:11px;text-anchor:middle;pointer-events:none}
+.chart-box{position:relative;height:300px}
+canvas{max-width:100%}
+.metric-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.metric-row button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px 12px;cursor:pointer}
+.metric-row button.active{background:var(--blue);color:#04121f;font-weight:700;border-color:var(--blue)}
+body.low-bandwidth .chart-box{display:none}
+body.low-bandwidth .chart-note{display:block !important}
+.chart-note{display:none;color:var(--amber)}
+.triage-result{border-radius:var(--radius);padding:16px;margin-top:14px;border:2px solid}
+.triage-result.AllGood{border-color:var(--green);background:rgba(47,191,113,.09)}
+.triage-result.KeepEye{border-color:var(--amber);background:rgba(245,166,35,.09)}
+.triage-result.TellMedic{border-color:var(--amber);background:rgba(245,166,35,.14)}
+.triage-result.GetHelp{border-color:var(--red);background:rgba(239,68,68,.12)}
+.triage-result h3{margin:0 0 6px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.kv div{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px}
+.kv .k{font-size:.78rem;color:var(--muted)} .kv .v{font-weight:700}
+ul.tight{margin:6px 0;padding-left:20px}
+ul.tight li{margin:4px 0}
+footer{max-width:1180px;margin:20px auto 30px;padding:0 16px;color:var(--faint);font-size:.85rem}
+.notice{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:.9rem;color:var(--muted)}
+.hidden{display:none !important}
